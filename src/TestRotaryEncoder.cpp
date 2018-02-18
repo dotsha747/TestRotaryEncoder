@@ -8,7 +8,6 @@
 
 #include "wiringPi.h"
 
-#include <functional>
 #include <iostream>
 
 using namespace std;
@@ -18,7 +17,6 @@ using namespace std;
 #define pinOA 4
 #define pinOB 5
 #define pinIS 6
-
 
 // ENCODER I
 
@@ -44,7 +42,6 @@ void encoder_I_ISR () {
 
 }
 
-
 // ENCODER O
 
 bool encoder_O_idle = true;
@@ -56,8 +53,10 @@ void encoder_O_ISR () {
 
 	// were we idle before this?
 	if (encoder_O_idle) {
-		// check our transition
-		if (a == 0) {
+		// check our transition.This is reversed for
+		// the outer encoder due to the gears used
+		// to transfer motion.
+		if (a == 1) {
 			cout << "O Clockwise" << endl;
 		} else {
 			cout << "O Anti-Clockwise" << endl;
@@ -69,13 +68,11 @@ void encoder_O_ISR () {
 
 }
 
-
 // PUSH BUTTON
 
 void push_button_ISR () {
 	cout << "Button Pressed" << endl;
 }
-
 
 
 int main() {
@@ -102,12 +99,10 @@ int main() {
 	wiringPiISR (pinIB, INT_EDGE_BOTH, &encoder_I_ISR);
 	wiringPiISR (pinOA, INT_EDGE_BOTH, &encoder_O_ISR);
 	wiringPiISR (pinOB, INT_EDGE_BOTH, &encoder_O_ISR);
-	wiringPiISR (pinIS, INT_EDGE_FALLING, &isrIS);
+	wiringPiISR (pinIS, INT_EDGE_FALLING, &push_button_ISR);
 
 	cout << "Press Control-C to exit." << endl;
 	while (1) {
 		delay (1000);
 	}
-
-
 }
