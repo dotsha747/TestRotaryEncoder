@@ -21,7 +21,7 @@ PREFIX=$(DESTDIR)/usr
 CC=g++
 AR=ar
 CFLAGS=-std=c++11 -O3 -I. -g
-LIBS= pthread
+LIBS= pthread 
 LDOPTS=$(patsubst %, -l%, $(LIBS))
 ARCH=$(shell arch)
 
@@ -29,7 +29,7 @@ ARCH=$(shell arch)
 
 MAINSRCS=$(wildcard src/*.cpp)
 MAINOBJS=$(patsubst %.cpp, %.o, $(MAINSRCS))
-MAINLIBS=pthread wiringPi  
+MAINLIBS=pthread wiringPi XPlaneExtPlaneClient
 MAINLDOPTS=
 MAINEXE=testRotaryEncoder
 

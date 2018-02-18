@@ -1,22 +1,44 @@
-//============================================================================
-// Name        : TestRotaryEncoder.cpp
-// Author      : Shahada Abubakar
-// Version     :
-// Copyright   : Copyright (c) 2014, NEXTSense Sdn Bhd
-// Description : Hello World in C++, Ansi-style
-//============================================================================
+/*
+ This file is part of TestRotaryEncoder
+ A C++ Demonstration of using Dual-Concentric Rotary Encoders
+ with Push Button to control the NAV radios on X-Plane's
+ G1000 panel.
+
+ See Library to access X-Plane via the ExtPlane Plugin for details.
+
+ Copyright (C) 2018 shahada abubakar <shahada@abubakar.net>
+
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+ */
 
 #include "wiringPi.h"
-
+#include <XPlaneExtPlaneClient/ExtPlaneClient.h>
 #include <iostream>
+#include <stdlib.h>
+#include <functional>
 
 using namespace std;
+using namespace XPlaneExtPlaneClient;
 
 #define pinIA 15
 #define pinIB 16
 #define pinOA 4
 #define pinOB 5
 #define pinIS 6
+
+ExtPlaneClient * extPlaneClient;
 
 // ENCODER I
 
@@ -32,8 +54,10 @@ void encoder_I_ISR () {
 		// check our transition
 		if (a == 0) {
 			cout << "I Clockwise" << endl;
+			extPlaneClient->sendLine("cmd once sim/GPS/g1000n1_com_inner_up");
 		} else {
 			cout << "I Anti-Clockwise" << endl;
+			extPlaneClient->sendLine("cmd once sim/GPS/g1000n1_com_inner_down");
 		}
 	}
 
@@ -58,8 +82,10 @@ void encoder_O_ISR () {
 		// to transfer motion.
 		if (a == 1) {
 			cout << "O Clockwise" << endl;
+			extPlaneClient->sendLine("cmd once sim/GPS/g1000n1_com_outer_up");
 		} else {
 			cout << "O Anti-Clockwise" << endl;
+			extPlaneClient->sendLine("cmd once sim/GPS/g1000n1_com_outer_down");
 		}
 	}
 
@@ -72,13 +98,39 @@ void encoder_O_ISR () {
 
 void push_button_ISR () {
 	cout << "Button Pressed" << endl;
+	extPlaneClient->sendLine("cmd once sim/GPS/g1000n1_com12");
+}
+
+// XPlane ExtPlane callbacks
+
+void onExtPlaneConnect () {
+	cout << "Connected to X-Plane via ExtPlane" << endl;
+}
+
+void onExtPlaneDisconnect () {
+	cout << "Disconnected from X-Plane via ExtPlane" << endl;
 }
 
 
-int main() {
+int main(int argc, char * argv[]) {
+
+	if (argc != 2) {
+		cerr << "testRotaryEncoder <XPlaneIP>" << endl;
+		exit (1);
+	}
 
 	// initialize wiringPi
 	wiringPiSetup ();
+
+	// setup ExtPlaneClient
+	cout << "Connecting to X-Plane ExtPlane service at " << argv[1] << " 51000" << endl;
+
+	extPlaneClient = new ExtPlaneClient(argv[1],
+			51000,
+			std::bind (&onExtPlaneConnect),
+			std::bind (&onExtPlaneDisconnect),
+			NULL
+	);
 
 	// set pins for input
 	pinMode (pinIA, INPUT);
