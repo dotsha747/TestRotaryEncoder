@@ -4,7 +4,7 @@
  with Push Button to control the NAV radios on X-Plane's
  G1000 panel.
 
- See Library to access X-Plane via the ExtPlane Plugin for details.
+ See http://blog.shahada.abubakar.net/post/diy-dual-concentric-rotary-encoders-with-push-button for details.
 
  Copyright (C) 2018 shahada abubakar <shahada@abubakar.net>
 
